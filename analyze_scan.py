@@ -1,7 +1,8 @@
 """
 Analyze Scan Module
 Combines nmap_scanner.py + the Ollama API.
-Flow: run nmap scan -> send raw results to LLM -> LLM returns a structured analysis.
+Flow: run nmap scan -> send raw results to LLM -> LLM returns a structured
+analysis per finding, including OWASP references.
 """
 
 import requests
@@ -11,20 +12,37 @@ from nmap_scanner import run_nmap_scan
 OLLAMA_URL = "http://localhost:11434/api/generate"
 MODEL_NAME = "mistral-manual"
 
-# System prompt to keep the analysis output consistent
+# Prompt template to keep the analysis output consistent
 ANALYSIS_PROMPT_TEMPLATE = """You are a security analyst assistant. Below is the result of an nmap scan against a target.
 
-Your tasks:
-1. Summarize which ports and services are open.
-2. For each service, note general potential security risks (if any).
-3. Provide brief follow-up recommendations.
+Your task: analyze the scan results and identify relevant security findings.
 
-Answer in a structured format with the following headings:
-- PORT & SERVICE SUMMARY
-- POTENTIAL RISKS
-- RECOMMENDATIONS
+For EACH finding identified, present it in the following format:
 
-Do not add information that is not present in the scan data. If the data is limited, say so.
+---
+### [Number]. [Finding Name]
+
+**Description:**
+Explain what was found (port, service, version, configuration) briefly and factually.
+
+**Risk:**
+Explain the potential security risk of this finding. Include a severity level
+(Low/Medium/High/Critical) if it can be assessed from the available data.
+
+**Remediation Recommendation:**
+Concrete steps that can be taken to mitigate/fix the issue.
+
+**OWASP Reference:**
+The relevant OWASP category (e.g. OWASP Top 10, OWASP ASVS, etc.), if applicable.
+If no OWASP reference is relevant for this finding, write "Not applicable".
+
+---
+
+Important rules:
+- Only report findings that are actually supported by the scan data. Do not invent findings.
+- If the scan results are limited or show no significant risk, state that clearly.
+- If there are no findings worth reporting, simply say "No significant findings from this scan result."
+- Be concise and to the point, avoid filler content.
 
 === NMAP SCAN RESULTS ===
 {scan_output}
