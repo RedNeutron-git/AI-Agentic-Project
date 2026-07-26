@@ -76,17 +76,6 @@ python3 nmap_scanner.py
 python3 analyze_scan.py
 ```
 
-## Project Structure
-
-```
-.
-├── test_ollama.py       # Test connection between Python and Ollama API
-├── nmap_scanner.py      # Recon module: runs Nmap, saves raw + XML output
-├── analyze_scan.py      # Core pipeline: module output -> LLM analysis
-├── Modelfile             # Ollama model configuration
-└── scan_results/         # Saved module outputs
-```
-
 ## License
 
 MIT License
